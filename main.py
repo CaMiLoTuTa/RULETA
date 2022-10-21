@@ -5,19 +5,21 @@ from ssd1306 import SSD1306_I2C
 import bluetooth
 from BLE import BLEUART
 import time
-ble = bluetooth.BLE()
-name = "ESPCamiloT"
-uart = BLEUART(ble, name)
-
-# ? INSTANCIA PANTALLA OLED
-i2c = I2C(0, scl=Pin(18), sda=Pin(19))
-ancho, alto = 128, 64
-oled = SSD1306_I2C(ancho, alto, i2c)
 
 # ? FUNCIÓN PRINCIPAL
 
 
 def main():
+
+    # ? INSTANCIA BLUETOOTH
+    ble = bluetooth.BLE()
+    name = "ESPCamiloT"
+    uart = BLEUART(ble, name)
+
+    # ? INSTANCIA PANTALLA OLED
+    i2c = I2C(0, scl=Pin(18), sda=Pin(19))
+    ancho, alto = 128, 64
+    oled = SSD1306_I2C(ancho, alto, i2c)
 
     # ? INSTANCIA CASILLAS (FOTORRESISTENCIAS)
     casilla0 = Pin(13, Pin.IN, Pin.PULL_UP)
@@ -235,9 +237,11 @@ def main():
                 dato = 90
                 print("Cerrado")
 
+        uart.irq(handler=on_rx)
+
     def movimientoServo360():
-        angulo = 0
-        duty = int((12.346*angulo**2) + (7777.8*angulo)+700000)
+        velocidad = 0
+        duty = int((12.346*velocidad**2) + (7777.8*velocidad)+700000)
         servo360.duty_ns(duty)
         servo360.duty(True)
 
