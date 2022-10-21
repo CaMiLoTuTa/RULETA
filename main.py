@@ -2,7 +2,12 @@
 # ? IMPORTAR LIBRERÍAS NECESARIAS
 from machine import Pin, PWM, I2C
 from ssd1306 import SSD1306_I2C
+import bluetooth
+from BLE import BLEUART
 import time
+ble = bluetooth.BLE()
+name = "ESPCamiloT"
+uart = BLEUART(ble, name)
 
 # ? INSTANCIA PANTALLA OLED
 i2c = I2C(0, scl=Pin(18), sda=Pin(19))
@@ -10,6 +15,8 @@ ancho, alto = 128, 64
 oled = SSD1306_I2C(ancho, alto, i2c)
 
 # ? FUNCIÓN PRINCIPAL
+
+
 def main():
 
     # ? INSTANCIA CASILLAS (FOTORRESISTENCIAS)
@@ -39,8 +46,7 @@ def main():
    # ? INSTANCIA BUZZER
     buzzer = PWM(Pin(5))
     notas1 = [369, 277, 329, 369, 329, 277, 493, 277, 369, 277, 329, 369, 329, 277, 493, 277, 369, 261, 329,
-              369, 329, 277, 493, 277, 369, 277, 329, 369, 329, 277, 493, 277, 349, 1, 1, 277, 329,
-              1, 369, 1, 1, 329, 277, 493, 277, 369, 1, 1, 277, 329, 369, 1, 1
+              369, 329, 277, 493, 277, 369, 277, 329, 369, 329, 277
               ]
 
     def notas1():
@@ -58,33 +64,43 @@ def main():
     def casilla0Seleccionada(casi):
         cas0 = 0
         return (cas0)
+
     def casilla1Seleccionada(casi):
         cas1 = 1
         return (cas1)
+
     def casilla2Seleccionada(casi):
         cas2 = 2
         return (cas2)
+
     def casilla3Seleccionada(casi):
         cas3 = 3
         return (cas3)
+
     def casilla4Seleccionada(casi):
         cas4 = 4
         return (cas4)
+
     def casilla5Seleccionada(casi):
         cas5 = 5
         return (cas5)
+
     def casilla6Seleccionada(casi):
         cas6 = 6
         return (cas6)
+
     def casilla7Seleccionada(casi):
         cas7 = 7
         return (cas7)
+
     def casilla8Seleccionada(casi):
         cas8 = 8
         return (cas8)
+
     def casilla9Seleccionada(casi):
         cas9 = 9
         return (cas9)
+
     def casilla10Seleccionada(casi):
         cas10 = 10
         return (cas10)
@@ -201,26 +217,34 @@ def main():
         time.sleep(15)
 
     # ? DEFINICIÓN DE FUNCIONES PARA MOVIMIENTO DE CADA SERVO
-    repe = 0
-    def movimientoServo180():
-        while repe in range(0, 2):
-            servo180.duty(0)
-            time.sleep_ms(1)
-            servo180.duty(180)
-            time.sleep_ms(1)
-            servo180.duty(0)
+    def mapearServo180(valor_sensor, minimo_entrada, maximo_entrada, minimo_salida, maximo_salida):
+        valor_mapeado = (valor_sensor - minimo_entrada) * (maximo_salida -
+                                                           minimo_salida) / (maximo_entrada - minimo_entrada) + minimo_salida
+        return valor_mapeado
 
-    repe2 = 0
+    def movimientoServo180():
+        def on_rx():
+            rx_recibe = uart.read().decode().strip()
+            dato = float(rx_recibe)
+
+            if dato == "abrir":
+                dato = 160
+                print("Abierto")
+
+            if dato == "cerrar":
+                dato = 90
+                print("Cerrado")
+
     def movimientoServo360():
-        while repe2 in range(0, 4):
-            servo360.duty(0)
-            time.sleep_ms(1)
-            servo360.duty(360)
-            time.sleep_ms(1)
-            servo360.duty(0)
+        angulo = 0
+        duty = int((12.346*angulo**2) + (7777.8*angulo)+700000)
+        servo360.duty_ns(duty)
+        servo360.duty(True)
+
 
 # ? CICLO INFINITO
     while True:
+
         # ~ SELECCIÓN DE CASILLAS
         if casilla0.value() == 1:
             casillaApostada = casilla0Seleccionada(casillaApostada)
@@ -254,7 +278,6 @@ def main():
 
         if casilla10.value() == 1:
             casillaApostada = casilla10Seleccionada(casillaApostada)
-
 
         time.sleep(3)
         print("Ya puede quitar el dedo")
